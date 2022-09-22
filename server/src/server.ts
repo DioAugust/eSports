@@ -1,8 +1,20 @@
-import express  from "express";
-const app = express();
+import express from "express";
+import { PrismaClient } from "@prisma/client"
 
-app.get('/games', (request, response) => {
-    return response.json([]);
+const app = express();
+const prisma = new PrismaClient()
+
+app.get('/games', async (request, response) => {
+    const games = await prisma.game.findMany({
+        include: {
+            _count: {
+                select: {
+                    ads: true,
+                }
+            }
+        }
+    })
+    return response.json(games)
 })
 
 app.post('/ads', (request, response) => {
@@ -10,22 +22,50 @@ app.post('/ads', (request, response) => {
 })
 
 
-app.get('/games/:id/ads',  (request, response) => {
-    // const gamesId = request.params.id;
+app.get('/games/:id/ads', async (request, response) => {
+    const gameId = request.params.id;
 
-    return response.json([
-        {id: 1, name: 'anuncio1'},
-        {id: 2, name: 'anuncio2'},
-        {id: 3, name: 'anuncio3'},
-        {id: 4, name: 'anuncio4'},
-        {id: 5, name: 'anuncio5'},
-    ])
+    const ads = await prisma.ad.findMany({
+        select: {
+            id: true,
+            name: true,
+            weekDays: true,
+            useVoiceChannel: true,
+            yearsPlaying: true,
+            hourStart: true,
+            hourEnd: true,
+        },
+        where: {
+            gameId,
+        },
+        orderBy: {
+            createdAt: 'desc'
+        }
+    })
+
+    return response.json(ads.map(ad => {
+        return {
+            ...ad,
+            weekDays: ad.weekDays.split(',')
+        }
+    }))
 });
 
-app.get('ads/:id/discord',  (request, response) => {
-    // const adId = request.params.id;
+app.get('/ads/:id/discord', async (request, response) => {
+    const adId = request.params.id;
 
-    return response.json([])
+    const ad = await prisma.ad.findUniqueOrThrow({
+        select: {
+            discord: true,
+        },
+        where: {
+            id: adId,
+        }
+    })
+
+    return response.json({
+        discord: ad.discord
+    })
 });
 
 app.listen(3333)
