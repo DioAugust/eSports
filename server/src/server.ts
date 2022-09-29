@@ -1,7 +1,15 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client"
+import Converts from './utils/Converts';
+import ConvertsHourString from "./utils/Converts-hour-string";
+import cors from "cors"
+
 
 const app = express();
+
+app.use(express.json())
+app.use(cors())
+
 const prisma = new PrismaClient()
 
 app.get('/games', async (request, response) => {
@@ -17,8 +25,26 @@ app.get('/games', async (request, response) => {
     return response.json(games)
 })
 
-app.post('/ads', (request, response) => {
-    return response.status(201).json([]);
+app.post('/games/:id/ads', async (request, response) => {
+    const gameId = request.params.id;
+    const body = request.body;
+
+
+    const ad = await prisma.ad.create({
+        data: {
+            gameId,
+            name: body.name,  
+            yearsPlaying: body.yearsPlaying,
+            discord: body.discord,
+            weekDays: body.weekDays.join(','),
+            hourStart: Converts(body.hourStart),
+            hourEnd: Converts(body.hourEnd),
+            useVoiceChannel: body.useVoiceChannel,
+        }
+
+    })
+
+    return response.status(201).json(body);
 })
 
 
@@ -46,7 +72,9 @@ app.get('/games/:id/ads', async (request, response) => {
     return response.json(ads.map(ad => {
         return {
             ...ad,
-            weekDays: ad.weekDays.split(',')
+            weekDays: ad.weekDays.split(','),
+            hourStart: ConvertsHourString(ad.hourStart),
+            hourEnd: ConvertsHourString(ad.hourEnd)
         }
     }))
 });
