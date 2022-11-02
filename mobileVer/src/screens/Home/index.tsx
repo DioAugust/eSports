@@ -24,7 +24,7 @@ export function Home() {
   }
 
   useEffect(() => {
-    fetch('http://192.168.1.8:3333/games')
+    fetch('http://192.168.1.4:3333/games')
       .then(response => response.json())
       .then(data => setGames(data))
   }, [])
@@ -49,12 +49,13 @@ export function Home() {
             <GamingCard
               data={item}
               onPress={() => handleOpenGame(item)}
-            />)}
+            />
+            )}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.contentList}
         />
       </SafeAreaView>
     </Background>
-  );
+  )
 }
