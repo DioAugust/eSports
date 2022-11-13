@@ -11,6 +11,8 @@ import { THEME } from '../../theme';
 import { Heading } from '../../components/Heading';
 import { DuoCard, DuoCardProps } from '../../components/DuoCard/index';
 import { useEffect, useState } from 'react';
+import local from '../../const'
+import { DuoMatch } from '../../components/DuoMatch';
 
 export function Game() {
   const [duos, setDuos] = useState<DuoCardProps[]>([]);
@@ -18,13 +20,14 @@ export function Game() {
   const route = useRoute();
   const game = route.params as GameParams
   const navigation = useNavigation();
+  const [discordSelected, setDiscordSelected] = useState('sdf');
 
   function handleGoBack() {
     navigation.goBack()
   }
 
   useEffect(() => {
-    fetch(`http://192.168.1.6:3333/games/${game.id}/ads`)
+    fetch(`http://${local}:3333/games/${game.id}/ads`)
       .then(response => response.json())
       .then(data => setDuos(data))
   }, [])
@@ -74,6 +77,12 @@ export function Game() {
               Ainda não há duos cadastrados para este jogo
             </Text>
           )} />
+
+          <DuoMatch 
+            visible={discordSelected.length > 0}
+            discord="https://discord.gg/8J2Y2J"
+            onClose={() => setDiscordSelected('')}
+          />
         </SafeAreaView>
     </Background>
   );

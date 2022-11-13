@@ -11,6 +11,7 @@ import { GamingCard, GameCardProps } from '../../components/GamingCard';
 import { Heading } from '../../components/Heading';
 
 import { styles } from './styles';
+import local from '../../const';
 
 
 
@@ -24,7 +25,7 @@ export function Home() {
   }
 
   useEffect(() => {
-    fetch('http://192.168.1.6:3333/games')
+    fetch(`http://${local}:3333/games`)
       .then(response => response.json())
       .then(data => setGames(data))
   }, [])
